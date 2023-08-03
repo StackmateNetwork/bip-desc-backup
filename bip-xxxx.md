@@ -1,11 +1,13 @@
 <pre>
-  BIP: 128
+  BIP: XXXX
   Title: Descriptor backup protocol 
-  Author: Rajasrhi Maitra <raj@bitshala.org>, Vishal Menon <ishi@stackmate.org>
+  Author: Vishal Menon <ishi@stackmate.org>
+          Rajasrhi Maitra <raj@bitshala.org> 
   Comments-Summary: No comments yet.
   Comments-URI: https://github.com/bitcoin/bips/wiki/Comments:BIP-0128
   Status: Draft
-  Type: Applications
+  Type: Process
+  Layer: Applications
   Created: 2023-09-03
   License: BSD-3-Clause
            CC0-1.0
@@ -65,7 +67,7 @@ The encryption key will be derived from the path: [8bb1dc5b/83696968'/128169'/32
 The encrypted descriptor will be as follows:
 
 <pre>
-8bb1dc5b_0_$nonce:$encrypted_descriptor
+[8bb1dc5b/83696968'/128169'/32'/0']$nonce:$encrypted_descriptor
 </pre>
 
 
