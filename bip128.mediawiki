@@ -1,0 +1,73 @@
+<pre>
+  BIP: 128
+  Title: Descriptor backup protocol 
+  Author: Rajasrhi Maitra <raj@bitshala.org>, Vishal Menon <ishi@stackmate.org>
+  Comments-Summary: No comments yet.
+  Comments-URI: https://github.com/bitcoin/bips/wiki/Comments:BIP-0128
+  Status: Draft
+  Type: Applications
+  Created: 2023-09-03
+  License: BSD-3-Clause
+           CC0-1.0
+</pre>
+
+==Abstract==
+
+==Motivation==
+Descriptor wallets are becoming more common place today and are the defacto standard for several layer 2 protocols like Lightning,
+Coinswap, Submarine Swaps etc. All existing wallets have varying backup/recovery mechanism which makes it hard for users of one wallet to 
+recover their scripts in other wallets in a standardized way. 
+
+The motivation for this BIP is to create a standardized process for backup and recovery of descriptor wallets.
+Most wallets share in common a mechanism of encrypting the descriptor backup and making it redundant and easily available via cloud
+storage. The difference is that most abandon the mnemonic interface which Bitcoin users are familiar with.
+
+Our goal is to retain the mnemonic interface and ensure that users only have to focus on securing a 12/24 word BIP39 mnemonic which has all the 
+information to recover any bitcoin descriptor wallet.
+
+==Specification==
+
+We propose a backup and recovery mechanism that maintains the mnemonic interface specified in BIP39 and a specific configuration
+of BIP85 to generate encryption keys used to encrypt the descriptor string.
+The fingerprint of the seed and BIP85 path are padded to the nonce used with the encrypted descriptor to allow wallets to easily derive the 
+encryption key used. 
+
+We use ChaCha20Poly1305 with a 32-byte/256-bit key as the encryption standard. 
+ChaCha20Poly1305 is faster than 256-bit AES, so it's less likely you'll get annoyed by slow connection speeds. 
+Without special hardware, 256-bit AES falls behind its hardware-free competitor. 
+Plus, stream ciphers are significantly faster than their block-based counterparts.
+
+Note that ChachaPoly does not support 64-byte key size, this is why we have chosen 32-byte as the key size. 
+
+We use the `Application number: 128169' from BIP85` to derive a HEX encryption key.
+
+The derivation path format is: `m/83696968'/128169'/{num_bytes}'/{index}'`
+
+The `num_bytes` value is always set to 32 
+The `index` we use will be in the range of 1-83696968.
+
+Additionally, where possible we want to avoid having the entire private descriptor as the encrypted backup, to ensure that in the case 
+that the encryption key is compromised, the funds cannot be sweeped from the wallet and the worst case is a loss of privacy. 
+Where private keys or hash preimages are derivable from the mnemonic, we replace the private data with the public counterpart.
+
+Consider the following Coinswap descriptor for which we want to make a backup:
+```
+wsh(and(thresh(2,[8bb1dc5b/84'/0'/0']xprvA/*, [77ab3c1c/84'/0'/0']xprvB), hash160(preimage)))
+```
+The owner of this coin generated xprvA from their mnemonic with fingerprint `8bb1dc5b`, while xprvB and the hash preimage was provided by the
+counter-party. In this case, the descriptor we will back up will be as follows:
+
+```
+wsh(and(thresh(2,[8bb1dc5b/84'/0'/0']xpubA/*, [77ab3c1c/84'/0'/0']xprvB), hash160(preimage)))
+```
+The encryption key will be derived from the path: [8bb1dc5b/83696968'/128169'/32'/0']
+
+The encrypted descriptor will be as follows:
+
+```
+8bb1dc5b_0_$nonce:$encrypted_descriptor
+```
+
+
+The above encrypted descriptor can be made redundant via cloud backup and it contains all the necessary information 
+for any wallet to derive the private descriptor from which the spending wallet can be recovered.
