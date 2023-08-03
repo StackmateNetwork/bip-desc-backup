@@ -16,6 +16,7 @@
 ==Abstract==
 
 ==Motivation==
+
 Descriptor wallets are becoming more common place today and are the defacto standard for several layer 2 protocols like Lightning,
 Coinswap, Submarine Swaps etc. All existing wallets have varying backup/recovery mechanism which makes it hard for users of one wallet to 
 recover their scripts in other wallets in a standardized way. 
