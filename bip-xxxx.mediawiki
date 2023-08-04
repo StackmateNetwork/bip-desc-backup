@@ -42,35 +42,38 @@ Plus, stream ciphers are significantly faster than their block-based counterpart
 
 Note that ChachaPoly does not support 64-byte key size, this is why we have chosen 32-byte as the key size. 
 
-We use the `Application number: 128169' from BIP85` to derive a HEX encryption key.
+We use the <code>Application number: 128169' from BIP85</code> to derive a HEX encryption key.
 
-The derivation path format is: `m/83696968'/128169'/{num_bytes}'/{index}'`
+The derivation path format is: <code> m/83696968'/128169'/{num_bytes}'/{index}'</code>
 
-The `num_bytes` value is always set to 32 
-The `index` we use will be in the range of 1-83696968.
+The num_bytes value is always set to 32 
+The index we use will be in the range 1-83696968.
 
 Additionally, where possible we want to avoid having the entire private descriptor as the encrypted backup, to ensure that in the case 
 that the encryption key is compromised, the funds cannot be sweeped from the wallet and the worst case is a loss of privacy. 
 Where private keys or hash preimages are derivable from the mnemonic, we replace the private data with the public counterpart.
 
 Consider the following Coinswap descriptor for which we want to make a backup:
-<pre>
+<code>
 wsh(and(thresh(2,[8bb1dc5b/84'/0'/0']xprvA/*, [77ab3c1c/84'/0'/0']xprvB), hash160(preimage)))
-</pre>
+</code>
+
 The owner of this coin generated xprvA from their mnemonic with fingerprint `8bb1dc5b`, while xprvB and the hash preimage was provided by the
 counter-party. In this case, the descriptor we will back up will be as follows:
-<pre>
+
+<code>
 wsh(and(thresh(2,[8bb1dc5b/84'/0'/0']xpubA/*, [77ab3c1c/84'/0'/0']xprvB), hash160(preimage)))
-</pre>
+</code>
 
 The encryption key will be derived from the path: [8bb1dc5b/83696968'/128169'/32'/0']
 
 The encrypted descriptor will be as follows:
 
-<pre>
+<code>
 [8bb1dc5b/83696968'/128169'/32'/0']$nonce:$encrypted_descriptor
-</pre>
+</code>
 
+The derivation path is not part of the nonce, it is simply padded to the encrypted string afterward.
 
 The above encrypted descriptor can be made redundant via cloud backup and it contains all the necessary information 
 for any wallet to derive the private descriptor from which the spending wallet can be recovered.
